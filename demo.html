@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PRIOR KNOWLEDGE GUIDED SOURCE SELECTION</title>
+<!--  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">-->
+<!--  <link href="static/layout.css" rel="stylesheet" type="text/css" media="all">-->
+  <link rel="stylesheet" type="text/css" href="static/css/element-ui.css" />
+  <script src="static/js/vue.min.js" type="text/javascript" charset="utf-8"></script>
+  <script src="static/js/element-ui.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+  <div id="app"><el-container id="app-container">
+<!--    <el-header height="35px">-->
+<!--      <el-row>-->
+<!--        <el-col :span="2"><div class="grid-content bg-purple-dark"><p></p></div></el-col>-->
+<!--        <el-col :span="4"><div class="grid-content bg-purple-dark">Home</div></el-col>-->
+<!--        <el-col :span="4"><div class="grid-content bg-purple-dark">-->
+<!--          <el-dropdown>-->
+<!--            <span class="el-dropdown-link" style="color: #E0E0E0; font-size: 24px">-->
+<!--              Introduction<i class="el-icon-arrow-down el-icon&#45;&#45;right"></i>-->
+<!--            </span>-->
+<!--            <el-dropdown-menu slot="dropdown">-->
+<!--              <el-dropdown-item>DATASET</el-dropdown-item>-->
+<!--              <el-dropdown-item>NEURAL NETWORK</el-dropdown-item>-->
+<!--              <el-dropdown-item>TRANSFER STRATEGY</el-dropdown-item>-->
+<!--              <el-dropdown-item>LOSS FUNCTION</el-dropdown-item>-->
+<!--              <el-dropdown-item>EVALUATION METRIC</el-dropdown-item>-->
+<!--              <el-dropdown-item>MODEL FRAMEWORK</el-dropdown-item>-->
+<!--            </el-dropdown-menu>-->
+<!--          </el-dropdown>-->
+<!--        </div></el-col>-->
+<!--        <el-col :span="4"><div class="grid-content bg-purple-dark">Demonstration</div></el-col>-->
+<!--        <el-col :span="4"><div class="grid-content bg-purple-dark">Upload New Data</div></el-col>-->
+<!--        <el-col :span="4"><div class="grid-content bg-purple-dark">Contact Us</div></el-col>-->
+<!--        <el-col :span="2"><div class="grid-content bg-purple-dark"><p></p></div></el-col>-->
+<!--      </el-row>-->
+<!--    </el-header>-->
+
+    <el-aside width="240px">
+      <!-- 左边栏导航目录-->
+      <el-menu :default-openeds="activeFolds" :unique-opened="false" active-text-color="#5C307D">
+        <el-submenu index="1" :show-timeout="0" :hide-timeout="0">
+          <template slot="title">
+            <i class="el-icon-coordinate"></i>
+            <span>Introduction</span>
+          </template>
+          <a :href="'#1'" style="text-decoration: none;">
+            <el-menu-item index="1-1" style="font-size: 12px; height: 25px; line-height: 25px">Problem Description</el-menu-item>
+          </a>
+          <a :href="'#2'" style="text-decoration: none;">
+            <el-menu-item index="1-2" style="font-size: 12px; height: 25px; line-height: 25px">Source and target task information</el-menu-item>
+          </a>
+          <a :href="'#3'" style="text-decoration: none;">
+            <el-menu-item index="1-3" style="font-size: 12px; height: 25px; line-height: 25px">Candidate Source Tasks</el-menu-item>
+          </a>
+        </el-submenu>
+      </el-menu>
+    </el-aside>
+
+    <el-main>
+          <!-- main body -->
+      <el-collapse v-model="activeNames">
+        <el-collapse-item title="Problem Description" name="1">
+            <p style="text-align:justify;">When we have a pool of source tasks and a target task, we need to find out which source task we should transfer from in order to achieve the best transfer performance on the target task.</p>
+            <p style="text-align:justify;">The most common source selection approach is to fine-tune each source model on the target task to obtain a transfer accuracy on the target test set. This transfer accuracy is called the <strong>ground truth transferability</strong>, which can be represented by a certain segmentation accuracy evaluation metric, such as Dice score. Then the task that corresponds to the source model that achieves the best transfer accuracy will be selected as the most appropriate source. However, this naive method is very computationally expensive and may become very inefficient when the number of source tasks is too large.</p>
+            <p style="text-align:justify;">Inspired by the differences in modalities and RoI shapes of medical image segmentation tasks, we propose <strong>a source selection framework that incorporates the analysis of image characteristics with current state-of-the-art transferability estimation metrics</strong>. Given a pool of source tasks and a target task, we propose to analyze the image characteristics of tasks before computing transferability estimation metrics. Specifically, our framework consists of three steps: <strong>modality analysis, RoI anaylsis and transferability estimation</strong>, as shown in following flow chart.</p>
+            <p style="text-align:center;">
+              <img  src="static/images/demo/figure2.png" alt="">
+            </p>
+        </el-collapse-item>
+        <el-collapse-item title="Source and target task information" name="2">
+          <p style="text-align:justify;"><strong>In the following, we provide an interactive demo for source-task selection over 16 candidate source tasks and two target tasks.</strong> The data for these tasks come from the FeTS 2021 brain tumor segmentation datasets.  Each task is identified by its modality (T1-weighted (T1), T2-weighted (T2), Fluid-Attenuated Inversion Recovery (FLAIR), and T1-Weighted Contrast-Enhanced (T1CE)), label (edematous tissue (ED), enhancing tumor (ET), and necrotic tumor core (NCR)), and partition.</p>
+          <p style="text-align:justify;">e.g., “ET-14-T1” represents the task of enhancing tumor segmentation on T1 modality using data from partition 14. </p>
+        </el-collapse-item>
+        <el-collapse-item title="Candidate Source Tasks" name="3">
+          <h1 style="text-align: center">Visualization of 16 source tasks</h1>
+          <div class="scrollable">
+            <table ref="sourceTable" style="margin: auto">
+              <tbody>
+              <template v-for="i of 4">
+                <tr>
+                  <template v-for="j of 4">
+                    <td align = "center" ><img :src="`static/images/demo/0312/final/${result[(i-1)*4+j-1].source}.jpg`" alt=""></td>
+                  </template>
+                </tr>
+                <tr>
+                  <template v-for="j of 4">
+                    <td align = "center" >[[ result[(i-1)*4+j-1].source ]]</td>
+                  </template>
+                </tr>
+              </template>
+              </tbody>
+            </table>
+          </div>
+        </el-collapse-item>
+        <el-collapse-item title="Select Target Task" name="4">
+          <p>Select one of sample tasks as the target task to view the source selection result</p>
+          <el-row style="padding-top: 10px">
+            <el-col :span="3" style="padding-top: 40px">
+              <el-dropdown @command="handleCommand">
+                <el-button>
+                  Select Target<i class="el-icon-arrow-down el-icon--right"></i>
+                </el-button>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="ET-22-T2">ET-22-T2</el-dropdown-item>
+                  <el-dropdown-item command="ET-20-T1">ET-20-T1</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </el-col>
+            <el-col :span="5" style="padding-top: 50px">
+              Current selected target: [[ currentSource ]]
+            </el-col>
+            <el-col :span="3" style="text-align: center">
+              <img ref="targetImage" style="width: 100px; height: 100px" src="static/images/demo//et-22-t2/r_et-22-t2.jpg" />
+              <span class="demonstration" ref="targetName"><p>ET-22-T2</p></span>
+            </el-col>
+          </el-row>
+          <p style="text-align:justify;">For this target task ET-22-T2, its labels is enhancing tumor(ET), and its modality is T2-weighted (T2).This task is a little part of ET-T2 this big dataset.</p>
+          <p style="text-align:center;">
+           	<img  ref ="targetData" src="static/images/demo/et-22-t2/data.jpg" alt="">
+           	<img  ref ="targetMask" src="static/images/demo/et-22-t2/target.png" alt="">
+           	<img  ref="targetLabel" src="static/images/demo/et-22-t2/r_et-22-t2.jpg" alt="">
+          </p>
+          <el-divider></el-divider>
+        </el-collapse-item>
+      </el-collapse>
+
+      <p>Use the following checkboxes to decide which filtering method to perform, or both</p>
+      <p>Choose OTCE or H-Score as the transferability estimation metric to further evaluate and rank the transferability of source tasks selected from the previous step.</p>
+      <p>Use the slider to change the transferability threshold and click predict to update the result.</p>
+      <el-row style="padding-bottom: 8px">
+        <el-tooltip class="item" effect="dark" content="Modality analysis is used to filter source tasks that has the same modality as the target task" placement="top">
+          <el-col :span="4" style="padding-top: 8px">
+            <el-checkbox v-model="filterModality">Filter source tasks by modality</el-checkbox>
+          </el-col>
+        </el-tooltip>
+        <el-tooltip class="item" effect="dark" content="RoI similarity between source and target labels are measured by the SSIM metric." placement="top">
+          <el-col :span="4" style="padding-top: 8px">
+            <el-checkbox v-model="filterROI">Filter source tasks by region-of-interest (ROI) similarity</el-checkbox>
+          </el-col>
+        </el-tooltip>
+      </el-row>
+
+      <el-row>
+        <el-col :span="2" style="padding-top: 8px">
+          <el-radio v-model="evaluate" label="1" @change="changeMarks">H-score</el-radio>
+        </el-col>
+        <el-col :span="2" style="padding-top: 8px">
+          <el-radio v-model="evaluate" label="2" @change="changeMarks">OTCE :</el-radio>
+        </el-col>
+        <el-col :span="6">
+          <el-slider v-model="threshold" :marks="marks" :format-tooltip="formatTooltip"></el-slider>
+        </el-col>
+        <el-col :span="1"><p></p></el-col>
+        <el-tooltip class="item" effect="dark" content="Click predict to update the result." placement="top">
+          <el-col :span="2">
+            <el-button class="btn" @click="predict()">Predict</el-button>
+          </el-col>
+        </el-tooltip>
+        <el-col :span="5"><p></p></el-col>
+        <el-col :span="5">
+          <div class="tag-wrapper">
+            <div class="tag-row">
+              <el-tag color="#CCBBFF"></el-tag>
+              <p>filter by modality</p>
+            </div>
+            <div class="tag-row">
+              <el-tag color="#00b7ff"></el-tag>
+              <p>filter by ROI</p>
+            </div>
+            <div class="tag-row">
+              <el-tag color="#ff5e5e"></el-tag>
+              <p>final result</p>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+
+      <img ref="finalFig" id="final" src="static/images/demo/bar_plot.png" alt="my plot" style="display: none">
+
+<!--      <p ref="result"></p>-->
+<!--      <el-row>-->
+<!--        <el-col :span="6"><div class="grid-content bg-purple-dark">-->
+<!--          <el-button class="btn" @click="modalityAnalysis()">MODALITY ANALYSIS</el-button>-->
+<!--        </div></el-col>-->
+<!--        <el-col :span="6"><div class="grid-content bg-purple-dark">-->
+<!--          <el-button class="btn" @click="roiAnalysis()">ROI ANALYSIS</el-button>-->
+<!--        </div></el-col>-->
+<!--        <el-col :span="6"><div class="grid-content bg-purple-dark">-->
+<!--          <el-button class="btn" @click="transferabilityEstimation()">TRANSFERABILITY ESTIMATION</el-button>-->
+<!--        </div></el-col>-->
+<!--        <el-col :span="6"><div class="grid-content bg-purple-dark">-->
+<!--          <el-button class="btn" @click="finale()">SHOW THE RESULTS</el-button>-->
+<!--        </div></el-col>-->
+<!--      </el-row>-->
+      <el-row>
+        <el-col :span="1"><p></p></el-col>
+        <el-col :span="4">
+          <h1 style="text-align: center">Ground-truth</h1>
+          <img :src="`static/images/demo/${currentSource}/target.gif`" alt="">
+          <div ref="selectedTask" style="padding-top: 20px">
+            <p>Move the mouse to the source task to view detailed information and performance.</p>
+          </div>
+          <p>Left: the groundtruth segmentation mask of the target task</p>
+          <p>Right: the predicted masks obtained by fine-tuning each source model on the target task.</p>
+          <p>Source tasks selected by proposed algorithm at different steps will be highlighted with different colors.</p>
+        </el-col>
+        <el-col :span="1"><p></p></el-col>
+        <el-col :span="16">
+          <h1 style="text-align: center">Predict Table(s)</h1>
+          <div class="scrollable">
+            <table ref="predictTable" style="margin: auto">
+              <tbody>
+              <template v-for="i of 4">
+                <tr>
+                  <template v-for="j of 4">
+                    <td align = "center" ><img @mouseover="showDetail((i-1)*4+j-1)"
+                                               @mouseleave="showDetail(-1)"
+                                               :src="`static/images/demo/${currentSource}/${result[(i-1)*4+j-1].source}.gif`"
+                                               alt=""></td>
+                  </template>
+                </tr>
+                <tr>
+                  <template v-for="j of 4">
+                    <td align = "center" >[[ `${result[(i-1)*4+j-1].source}: ${result[(i-1)*4+j-1].dice}` ]]</td>
+                  </template>
+                </tr>
+              </template>
+              </tbody>
+            </table>
+          </div>
+        </el-col>
+      </el-row>
+
+    </el-main>
+
+  </el-container></div>
+</body>
+</html>
+<script>
+  var app = new Vue({
+    el: '#app',
+    delimiters:['[[', ']]'],
+    data: {
+      activeFolds: ['1'],
+      activeNames: ['4'],
+      activeName: 'first',
+      currentSource: 'ET-22-T2',
+      evaluate: '2',
+      threshold: 75,
+      marks: {
+        0: '-0.020',
+        100: '-0.050'
+      },
+      filterModality: true,
+      filterROI: true,
+      result: null,
+      result1: [
+        {"source": "ED-14-T1", "HScore": "-0.0380", "OTCE": "-0.0395", "dice": "0.664", "rank-h": 15, "rank-otce": 8, "rank": 9},
+        {"source": "ED-14-T2", "HScore": "0.1887", "OTCE": "-0.0226", "dice": "0.703", "rank-h": 13, "rank-otce": 15, "rank": 2},
+        {"source": "NCR-14-T1", "HScore": "0.8990", "OTCE": "-0.0395", "dice": "0.646", "rank-h": 8, "rank-otce": 9, "rank": 13},
+        {"source": "NCR-14-T2", "HScore": "0.5140", "OTCE": "-0.0383", "dice": "0.660", "rank-h": 9, "rank-otce": 12, "rank": 11},
+        {"source": "ED-13-T1", "HScore": "0.4142", "OTCE": "-0.0407", "dice": "0.657", "rank-h": 10, "rank-otce": 5, "rank": 12},
+        {"source": "ED-13-T2", "HScore": "1.4031", "OTCE": "-0.0356", "dice": "0.695", "rank-h": 5, "rank-otce": 13, "rank": 4},
+        {"source": "NCR-13-T1", "HScore": "5.0050", "OTCE": "-0.0407", "dice": "0.628", "rank-h": 1, "rank-otce": 6, "rank": 14},
+        {"source": "NCR-13-T2", "HScore": "10.5247", "OTCE": "-0.0401", "dice": "0.683", "rank-h": 3, "rank-otce": 7, "rank": 5},
+        {"source": "ED-17-T1", "HScore": "0.3525", "OTCE": "-0.0435", "dice": "0.697", "rank-h": 11, "rank-otce": 2, "rank": 3},
+        {"source": "ED-17-T2", "HScore": "1.3327", "OTCE": "-0.0389", "dice": "0.708", "rank-h": 6, "rank-otce": 11, "rank": 0},
+        {"source": "NCR-17-T1", "HScore": "1.5211", "OTCE": "-0.0436", "dice": "0.612", "rank-h": 4, "rank-otce": 0, "rank": 15},
+        {"source": "NCR-17-T2", "HScore": "6.6535", "OTCE": "-0.0433", "dice": "0.681", "rank-h": 0, "rank-otce": 4, "rank": 6},
+        {"source": "ED-18-T1", "HScore": "0.1070", "OTCE": "-0.0435", "dice": "0.675", "rank-h": 14, "rank-otce": 3, "rank": 7},
+        {"source": "ED-18-T2", "HScore": "0.2776", "OTCE": "-0.0273", "dice": "0.707", "rank-h": 12, "rank-otce": 14, "rank": 1},
+        {"source": "NCR-18-T1", "HScore": "0.9038", "OTCE": "-0.0436", "dice": "0.664", "rank-h": 7, "rank-otce": 1, "rank": 10},
+        {"source": "NCR-18-T2", "HScore": "2.2038", "OTCE": "-0.0394", "dice": "0.666", "rank-h": 2, "rank-otce": 10, "rank": 8}
+      ],
+      result2: [
+        {"source": "ED-14-T1", "HScore": "1.5433", "OTCE": "-0.0320", "dice": "0.636", "rank-h": 9, "rank-otce": 15, "rank": 2},
+        {"source": "ED-14-T2", "HScore": "0.2268", "OTCE": "-0.0330", "dice": "0.609", "rank-h": 13, "rank-otce": 12, "rank": 9},
+        {"source": "NCR-14-T1", "HScore": "3.2383", "OTCE": "-0.0325", "dice": "0.560", "rank-h": 2, "rank-otce": 14, "rank": 13},
+        {"source": "NCR-14-T2", "HScore": "2.5139", "OTCE": "-0.0330", "dice": "0.627", "rank-h": 5, "rank-otce": 13, "rank": 5},
+        {"source": "ED-13-T1", "HScore": "1.7564", "OTCE": "-0.0333", "dice": "0.593", "rank-h": 7, "rank-otce": 11, "rank": 10},
+        {"source": "ED-13-T2", "HScore": "1.3293", "OTCE": "-0.0347", "dice": "0.636", "rank-h": 10, "rank-otce": 8, "rank": 3},
+        {"source": "NCR-13-T1", "HScore": "2.4574", "OTCE": "-0.0342", "dice": "0.498", "rank-h": 6, "rank-otce": 10, "rank": 15},
+        {"source": "NCR-13-T2", "HScore": "6.5037", "OTCE": "-0.0346", "dice": "0.610", "rank-h": 0, "rank-otce": 9, "rank": 8},
+        {"source": "ED-17-T1", "HScore": "2.5901", "OTCE": "-0.0351", "dice": "0.680", "rank-h": 4, "rank-otce": 7, "rank": 0},
+        {"source": "ED-17-T2", "HScore": "-3.2459", "OTCE": "-0.0363", "dice": "0.571", "rank-h": 15, "rank-otce": 0, "rank": 12},
+        {"source": "NCR-17-T1", "HScore": "25.7285", "OTCE": "-0.0361", "dice": "0.581", "rank-h": 3, "rank-otce": 3, "rank": 11},
+        {"source": "NCR-17-T2", "HScore": "40.6843", "OTCE": "-0.0363", "dice": "0.532", "rank-h": 1, "rank-otce": 1, "rank": 14},
+        {"source": "ED-18-T1", "HScore": "0.0901", "OTCE": "-0.0357", "dice": "0.613", "rank-h": 14, "rank-otce": 5, "rank": 7},
+        {"source": "ED-18-T2", "HScore": "0.3164", "OTCE": "-0.0355", "dice": "0.616", "rank-h": 11, "rank-otce": 6, "rank": 6},
+        {"source": "NCR-18-T1", "HScore": "0.2743", "OTCE": "-0.0361", "dice": "0.632", "rank-h": 12, "rank-otce": 4, "rank": 4},
+        {"source": "NCR-18-T2", "HScore": "1.6508", "OTCE": "-0.0362", "dice": "0.637", "rank-h": 8, "rank-otce": 2, "rank": 1}
+      ]
+    },
+    created() {
+      this.result = this.result1
+    },
+    methods: {
+      handleCommand(command) {
+        this.currentSource = command
+        this.$refs.targetImage.src = `static/images/demo/${command}/r_${command}.jpg`
+        this.$refs.targetData.src = `static/images/demo/${command}/data.jpg`
+        this.$refs.targetMask.src = `static/images/demo/${command}/target.png`
+        this.$refs.targetLabel.src = `static/images/demo/${command}/r_${command}.jpg`
+        console.log(this.$refs.targetImage.src)
+        this.$refs.targetName.innerHTML = `<p>${command}</p>`
+        if (command === "ET-22-T2") {
+          this.result = this.result1
+        } else {
+          this.result = this.result2
+        }
+      },
+      changeMarks() {
+        if (this.evaluate === '1') {
+          this.marks = { 0: '11', 100: '-1' }
+        } else {
+          this.marks = { 0: '-0.020', 100: '-0.050' }
+        }
+      },
+      formatTooltip(val) {
+        if (this.evaluate === '1') {
+          return (11 - 12 * val / 100).toFixed(3)
+        } else {
+          return (-0.020 - 0.030 * val / 100).toFixed(3)
+        }
+      },
+      showDetail(num) {
+        if (num < 0){
+          this.$refs.selectedTask.innerHTML = 'Move the mouse to the source task to view detailed information and performance.'
+        } else {
+          this.$refs.selectedTask.innerHTML =
+            `<img src="static/images/demo/0312/final/${this.result[num].source}.jpg" alt="">
+          <div style="text-align: center">
+            <p>Modality: ${this.result[num].source.split("-")[2]}</p>
+            <p>Center: ${this.result[num].source.split("-")[1]}</p>
+            <p>Task: ${this.result[num].source}</p>
+            <p>H-Score: ${this.result[num].HScore}</p>
+            <p>OTCE: ${this.result[num].OTCE}</p>
+            <p>Dice: ${this.result[num].dice}</p>
+          </div>`
+        }
+
+      },
+      predict() {
+        let threshold = 0
+        if (this.evaluate === '1') {
+          threshold = 11 - 12 * this.threshold / 100
+        } else {
+          threshold = -0.020 - 0.030 * this.threshold / 100
+        }
+        let mytable = this.$refs.predictTable
+        let _result = Array.from(new Array(17).keys()).slice(0)
+        for (let i = 0; i < mytable.rows.length; i++) {
+          for (let j = 0; j < mytable.rows[i].cells.length; j++) {
+            mytable.rows[i].cells[j].style.backgroundColor = null
+          }
+        }
+        if (this.filterModality) {
+          if (this.evaluate === '1') {
+            _result = [0, 2, 4, 6, 8, 10, 12, 14]
+            for (let i = 0; i < mytable.rows.length; i++) {
+              mytable.rows[i].cells[0].style.backgroundColor = "#CCBBFF"
+              mytable.rows[i].cells[2].style.backgroundColor = "#CCBBFF"
+            }
+          } else {
+            _result = [1, 3, 5, 7, 9, 11, 13, 15]
+            for (let i = 0; i < mytable.rows.length; i++) {
+              mytable.rows[i].cells[1].style.backgroundColor = "#CCBBFF"
+              mytable.rows[i].cells[3].style.backgroundColor = "#CCBBFF"
+            }
+          }
+        }
+        if (this.filterROI) {
+          if (this.evaluate === '1') {
+            _result = [0, 4, 8, 12]
+            for (let i = 0; i < mytable.rows.length; i++) {
+              mytable.rows[i].cells[1].style.backgroundColor = "#00b7ff"
+            }
+          } else {
+            _result = [1, 5, 9, 13]
+            for (let i = 0; i < mytable.rows.length; i++) {
+              mytable.rows[i].cells[1].style.backgroundColor = "#00b7ff"
+            }
+          }
+        }
+        let final_result = []
+        for (let i = 0; i < _result.length; i++) {
+          if (this.evaluate === '1') {
+            if (this.result[_result[i]].HScore >= threshold) {
+              final_result.push(_result[i])
+            }
+          } else {
+            if (this.result[_result[i]].OTCE >= threshold) {
+              final_result.push(_result[i])
+            }
+          }
+        }
+        for (let i = 0; i < mytable.rows.length; i++) {
+          for (let j = 0; j < mytable.rows[i].cells.length; j++) {
+            if (final_result.indexOf(Math.floor(i / 2) * 4 + j) !== -1) {
+              mytable.rows[i].cells[j].style.backgroundColor = "#ff5e5e"
+            }
+          }
+        }
+      }
+    }
+  })
+</script>
+
+<style>
+    html, body, #app, #app-container {
+        height: 100%;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+    .el-header {
+        background-color: #5C307D;
+        color:#E0E0E0;
+        text-align: left;
+        line-height: 35px;
+        font-size: x-large;
+        position:fixed;
+        top:0;
+        left: 0;
+        right: 0;
+        overflow: hidden;
+        z-index: 999;
+    }
+
+    .el-aside {
+        position:fixed;
+        left: 0;
+        /*top: 35px;*/
+        bottom: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+        z-index: 998;
+    }
+
+    .el-main {
+        background-color: #F9F9F9;
+        color: #333;
+        padding: 12px;
+        position:absolute;
+        top: 0px;
+        left: 240px;
+        right: 0;
+        bottom: 0;
+        overflow-y: scroll;
+    }
+
+    .el-menu {
+        height: 100%;
+        width: 100%;
+        background-color: #e5daed;
+        color: #333;
+    }
+
+    .el-submenu__title:hover {
+        background-color: #e5daed !important;
+    }
+    .el-menu-item:hover {
+        background-color: #fbf6ff !important;
+    }
+    .el-menu-item.is-active {
+        background-color: #e5daed !important;
+    }
+
+    .el-table th, .el-table tr, .el-table td {
+        padding: 1px !important;
+    }
+
+    .el-collapse-item__header {
+        font-size: 18px;
+        font-weight: bolder;
+    }
+
+    .el-tabs__item {
+        font-size: 18px;
+        font-weight: bolder;
+    }
+
+    .tag-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .tag-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .tag-row el-tag {
+        margin-right: 10px;
+    }
+</style>
