@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="">
+<head>
+<title>PRIOR KNOWLEDGE GUIDED SOURCE SELECTION</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link href="static/layout.css" rel="stylesheet" type="text/css" media="all">
+</head>
+<body id="top">
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<div class="wrapper row0">
+  <nav id="mainav" class="hoc clear"> 
+    <!-- ################################################################################################ -->
+    <ul class="clear">
+      <li ><a href="/">Home</a></li>
+      <li><a class="drop" href="#">Introduction</a>
+        <ul>
+          <li><a href="#">DATASET</a></li>
+          <li><a href="#">NEURAL NETWORK</a></li>
+          <li><a href="#">TRANSFER STRATEGY</a></li>
+          <li><a href="#">LOSS FUNCTION</a></li>
+          <li><a href="#">EVALUATION METRIC</a></li>
+	<li><a href="#">MODEL FRAMEWORK</a></li>
+        </ul>
+      </li>
+      <li class="active"><a href="/demonstration">Demonstration</a></li>
+      <li><a href="#">Upload New Data</a></li>
+      <li><a href="#">Contact Us</a></li>
+    </ul>
+    <!-- ################################################################################################ -->
+  </nav>
+</div>
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<div class="wrapper row1">
+  <header id="header" class="hoc clear"> 
+    <!-- ################################################################################################ -->
+    <h1><a href="/">PRIOR KNOWLEDGE GUIDED SOURCE SELECTION</a></h1>
+    <p>A Transfer Learning Framework For Medical Image Segmentation</p>
+    <!-- ################################################################################################ -->
+  </header>
+</div>
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<div class="wrapper bgded overlay light" style="background-image:url('static/images/demo/backgrounds/1.jpg');">
+  <div id="breadcrumb" class="hoc clear"> 
+    <!-- ################################################################################################ -->
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/demonstration">Demonstration</a></li>
+      <li><a href="#"> ET-22-T2{{ target_name }}</a></li>
+    </ul>
+    <!-- ################################################################################################ -->
+  </div>
+  </div>
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<div class="wrapper row3">
+  <main class="hoc container clear"> 
+    <!-- main body -->
+    <!-- ################################################################################################ -->
+    <div class="content"> 
+      <!-- ################################################################################################ -->
+      <h1>Problem Description</h1>
+      <p style="text-align:justify;">When we have a pool of source tasks and a target task, we need to find out which source task we should transfer from in order to achieve the best transfer performance on the target task.</p>
+      <p style="text-align:justify;">The most common source selection approach is to fine-tune each source model on the target task to obtain a transfer accuracy on the target test set. This transfer accuracy is called the <strong>ground truth transferability</strong>, which can be represented by a certain segmentation accuracy evaluation metric, such as Dice score. Then the task that corresponds to the source model that achieves the best transfer accuracy will be selected as the most appropriate source. However, this naive method is very computationally expensive and may become very inefficient when the number of source tasks is too large.</p>
+      <p style="text-align:justify;">Inspired by the differences in modalities and RoI shapes of medical image segmentation tasks, we propose <strong>a source selection framework that incorporates the analysis of image characteristics with current state-of-the-art transferability estimation metrics</strong>. Given a pool of source tasks and a target task, we propose to analyze the image characteristics of tasks before computing transferability estimation metrics. Specifically, our framework consists of three steps: <strong>modality analysis, RoI anaylsis and transferability estimation</strong>, as shown in following flow chart.</p>
+        <p style="text-align:center;">
+	<img  src="static/images/demo/figure2.png" alt="">  
+       </p>
+
+      <h1>the Information of Target Task</h1>
+      <p style="text-align:justify;">We perform experiments on three publicly available brain MRI segmentation datasets: FeTS 2021 for brain tumor segmentation, iSeg-2019  for brain matter seg- mentation, and WMH for white matter hyperintensities segmentation. And here, we will only demonstrate some examples of dataset FeTS2021.</p>
+      <p style="text-align:justify;">For each sample in FeTS 2021 dataset, volumes of 4 modalities are available, including T1-weighted (T1), T2-weighted (T2), Fluid-Attenuated Inversion Recovery (FLAIR), and T1-Weighted Contrast-Enhanced (T1CE). The volume size is 240*240*155. Corresponding labels of edematous tissue (ED), enhancing tumor (ET), and necrotic tumor core (NCR) are manually segmented by clinical experts.</p>
+      <p style="text-align:justify;">This dataset is further split into 22 partitions by the provider, according to different institutions and information extracted from images. Thus, each partition can be seen as an individual domain. Here, we additionally denote a task by “Task-Partition-Modality”.</p>
+       <p style="text-align:justify;">e.g., “ET-14-T1” represents the task of enhancing tumor segmentation on T1 modality using data from partition 14. </p>
+      <p style="text-align:justify;">For this target task ET-22-T2, its labels is enhancing tumor(ET), and its modality is T2-weighted (T2).This task is a little part of ET-T2 this big dataset.</p>
+        <p style="text-align:center;">
+	<img  src="static/images/demo/T2-100_.jpg" alt="">  
+          <img  src="static/images/demo/ET-T2-100.jpg" alt="">  
+          <img  src="static/images/demo/ET-22-T2.jpg" alt="">
+       </p>
+
+      <h1>Modality Analysis</h1>
+      <p style="text-align:justify;">Select source tasks that are under the same modality as the target task to generate Subset 1 (we define a subset as a smaller group of tasks selected from a bigger group of tasks)</p>
+      <h1 align = "center">Source Task Table(s)</h1>
+       <div class="scrollable">
+      <table id="datasets">
+          <tbody>
+            <tr>
+	{% for name in tables.mod_ana[0]%}	
+ 	  <td align = "center" ><img  src={{name}}  alt=""></td>
+	{% endfor %}
+            </tr>
+	<tr>
+	{% for name in tables.mod_name[0]%}
+ 	  <td align = "center" >{{name}}</td>
+	{% endfor %}
+            </tr>
+            <tr>
+	{% for name in tables.mod_ana[1]%}	
+ 	  <td align = "center" ><img  src={{name}}  alt=""></td>
+	{% endfor %}
+            </tr>
+	<tr>
+	{% for name in tables.mod_name[1]%}
+ 	  <td align = "center" >{{name}}</td>
+	{% endfor %}
+            </tr>
+            <tr>
+	{% for name in tables.mod_ana[2]%}	
+ 	  <td align = "center" ><img  src={{name}}  alt=""></td>
+	{% endfor %}
+            </tr>
+	<tr>
+	{% for name in tables.mod_name[2]%}
+ 	  <td align = "center" >{{name}}</td>
+	{% endfor %}
+            </tr>
+            <tr>
+	{% for name in tables.mod_ana[3]%}	
+ 	  <td align = "center" ><img  src={{name}}  alt=""></td>
+	{% endfor %}
+            </tr>
+	<tr>
+	{% for name in tables.mod_name[3]%}
+ 	  <td align = "center" >{{name}}</td>
+	{% endfor %}
+            </tr>
+          </tbody>
+        </table>
+       </div>
+      <button class="btn" onclick="modalityanalysis()">MODALITY ANALYSIS</button>
+      <script type="text/javascript">
+	function modalityanalysis(){
+	  var mytable = document.getElementById("datasets");
+	  mytable.class = "table";
+	  for (var i=0,rows=mytable.rows.length; i<rows; i++){
+	  mytable.rows[i].cells[1].style.backgroundColor = "#CCBBFF";
+	  mytable.rows[i].cells[3].style.backgroundColor = "#CCBBFF";
+	  }
+	var x = "<p>So the 8 purple datasets in the table will be used as Subset 1 in the next session of analysis.</p>"
+	document.getElementById("result1").innerHTML=x;
+	}
+      </script>
+      <p id="result1"></p>
+
+      <h1>RoI Analysis</h1>
+      <p style="text-align:justify;">Within Subset 1 (in which source tasks are under the same modality as the target task), select source tasks whose RoI shapes are more similar to that of the target task by calculating the shape similarity to generate Subset2. Specifically, we propose to use structural similarity index measure (SSIM) to quantify the RoI shape similarity.</p>
+      <h1 align = "center">Subset1 Table(s)</h1>
+       <div class="scrollable">
+       <table id="subset1" align = "center">
+          <tbody >
+            <tr>	
+	  <td align = "center" >Source</th>
+	  {% for line in tables.roi_ana[0] %}
+            <td align = "center" >{{ line}}</td>
+            {% endfor %}
+    	  </tr>	
+            <tr>	
+              <td align = "center" >Mask Examples</th>
+	  {% for line in tables.roi_ana[1] %}
+	  <td align = "center" ><img  src={{ line}}  alt=""></td>
+            {% endfor %}
+    	  </tr>	
+            <tr>	
+              <td align = "center" >SSIM</th>
+	  {% for line in tables.roi_ana[2] %}
+            <td align = "center" >{{ line}}</td>
+            {% endfor %}
+    	  </tr>	
+            <tr>	
+	  <td align = "center" >Source</th>
+	  {% for line in tables.roi_ana[3] %}
+            <td align = "center" >{{ line}}</td>
+            {% endfor %}
+    	  </tr>	
+            <tr>	
+              <td align = "center" >Mask Examples</th>
+	  {% for line in tables.roi_ana[4] %}
+	  <td align = "center" ><img  src={{ line}}  alt=""></td>
+            {% endfor %}
+    	  </tr>	
+            <tr>	
+              <td align = "center" >SSIM</th>
+	  {% for line in tables.roi_ana[5] %}
+            <td align = "center" >{{ line}}</td>
+            {% endfor %}
+    	  </tr>	
+          </tbody>
+        </table>
+       </div>
+      <button class="btn" onclick="roianalysis()">ROI ANALYSIS</button>
+      <script type="text/javascript">
+	function roianalysis(){
+	  var mytable = document.getElementById("subset1");
+	  for (var i=0,rows=mytable.rows.length; i<rows; i++){
+	  mytable.rows[i].cells[1].style.backgroundColor = "#CCBBFF";
+	  mytable.rows[i].cells[3].style.backgroundColor = "#CCBBFF";
+	  }
+	var x = "<p>So the 4 purple datasets in the table will be used as Subset 2 in the next session of analysis.</p>"
+	document.getElementById("result2").innerHTML=x;
+	}
+      </script>
+      <p id="result2"></p>
+      
+      <h1>Transferabiltiy Estimation</h1>
+      <p style="text-align:justify;">Within Subset 2, we apply a certain analytical transferability estimation metric to select potentially appropriate source tasks. In this work, we choose H-score or OTCE as the metric.</p>
+      <h1 align = "center">Subset2 Table(s)</h1>
+       <div class="scrollable" id="part1" style="display:none;">
+      <table  id="subset2">
+          <tbody>
+            <tr>
+              <td align = "center" >Source</th>
+ 	  {% for line in tables.trans_data[0] %}
+            <td align = "center" >{{ line}}</td>
+            {% endfor %}
+            </tr>	
+            <tr>
+              <td align = "center" >Mask Examples</th>
+ 	  {% for line in tables.trans_data[1] %}
+ 	  <td align = "center" ><img  src={{ line}}  width="10%" height="10%" alt=""></td>
+            {% endfor %}
+            </tr>	
+            <tr>
+              <td align = "center" >H-score</th>
+ 	  {% for line in tables.trans_data[2] %}
+            <td align = "center" >{{ line}}</td>
+            {% endfor %}
+            </tr>	
+            <tr>
+              <td align = "center" >OTCE</th>
+ 	  {% for line in tables.trans_data[3] %}
+            <td align = "center" >{{ line}}</td>
+            {% endfor %}
+            </tr>	
+          </tbody>
+        </table>
+       </div>
+      <button class="btn" onclick="a12()">TRANSFERABILITY ESTIMATION</button>
+      <script type="text/javascript">
+	function a12(){
+	  var mydiv = document.getElementById("part1");
+	  var mytable = document.getElementById("subset2");
+	  mydiv.style.display="block";
+	  mytable.class = "table";
+	for (var i=0,rows=mytable.rows.length; i<rows; i++){
+	  mytable.rows[i].cells[3].style.backgroundColor = "#CCBBFF";
+	  }
+	var x = "<p>A higher H-score or a lower OTCE score indicates better transferability. So the final source target is ED-17-T2.</p>"
+	document.getElementById("result3").innerHTML=x;
+	}
+      </script>
+      <p id="result3"></p>
+      
+      <h1>Final Results</h1>
+      <p style="text-align:justify;">Finally, we will show the results by analytical methods and ground truth transferability, and compare and validate the feasibility of the proposed model.</p>
+      <div class="scrollable" id="part2" style="display:none;">
+      <h1 align = "center">Result Table(s)</h1>
+      <table  id="final">
+          <thead>
+            <tr>
+              <th>Source</th>
+              <th>H-score</th>
+              <th>OTCE</th>
+              <th>Dice</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for line in tables.final_results %}
+            <tr>
+	{% for name in line%}
+            <td>{{ name}}</td>
+	{% endfor %}
+            </tr>	
+          {% endfor %}
+          </tbody>
+       </table>
+      <img  id = "final" src="static/images/demo/bar_plot.png" alt="my plot">
+       </div>
+      <button class="btn" onclick="finalre()">SHOW THE RESULTS</button>
+      <script type="text/javascript">
+	function finalre(){
+	  var mydiv = document.getElementById("part2");
+	  var mytable = document.getElementById("final");
+	  mydiv.style.display="block";
+	  mytable.class = "table";
+	  mytable.rows[2].style.color="#6600CC"; 
+	  mytable.rows[6].style.color="#6600CC"; 
+	  mytable.rows[10].style.color="#6600CC"; 
+	  mytable.rows[14].style.color="#6600CC"; 
+	var x = "<p>The histogram above shows the ground truth ranking of the transfer effect of using different tasks as source tasks, and you can see that several of the source tasks selected using our algorithm are also at the top of the ground truth ranking, which also proves the effectiveness of the proposed algorithm.</p>"
+	document.getElementById("result4").innerHTML=x;
+	}
+      </script>
+      <p id="result4"></p>
+      <!-- ################################################################################################ -->
+    </div>
+    <!-- ################################################################################################ -->
+    <!-- / main body -->
+   
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<!-- ################################################################################################ -->
+<a id="backtotop" href="#top"><i class="fa fa-chevron-up"></i></a>
+<!-- JAVASCRIPTS -->
+<script src="layout/scripts/jquery.min.js"></script>
+<script src="layout/scripts/jquery.backtotop.js"></script>
+<script src="layout/scripts/jquery.mobilemenu.js"></script>
+</body>
+</html>
